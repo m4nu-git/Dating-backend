@@ -1,0 +1,92 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+model User {
+  id                Int         @id @default(autoincrement())
+  first_name        String
+  last_name         String
+  email             String      @unique
+  password          String
+  phone_number      String
+  gender            String
+  preferred_gender  String
+  longitude         String
+  latitude          String
+  dating_type       String
+  geohash           String
+  occupation        String
+  region            String
+  religion          String
+  date_of_birth     String
+  home_town         String
+  age               Int
+  bloom_filter      String
+  behaviours        Behaviour[]
+  images            Images[]
+  liked_by          Likes[]     @relation("liked_by")
+  liked_received    Likes[]     @relation("liked_received")
+  matches_initiated Matches[]   @relation("match_initiated")
+  matches_accepted  Matches[]   @relation("match_accepted")
+  chats_received    Chats[]     @relation("chats_received")
+  chats_sent        Chats[]     @relation("chats_sent")
+
+  @@index([age, geohash])
+}
+
+model Images {
+  id      Int     @id @default(autoincrement())
+  url     String
+  user_id Int
+  user    User    @relation(fields: [user_id], references: [id])
+  likes   Likes[]
+}
+
+model Behaviour {
+  id       Int     @id @default(autoincrement())
+  question String
+  answer   String
+  user_id  Int
+  user     User    @relation(fields: [user_id], references: [id])
+  likes    Likes[]
+}
+
+model Likes {
+  id           Int        @id @default(autoincrement())
+  image_id     Int?
+  image        Images?    @relation(fields: [image_id], references: [id])
+  liked_by     Int
+  by_user      User       @relation("liked_by", fields: [liked_by], references: [id])
+  liked_to     Int
+  to_user      User       @relation("liked_received", fields: [liked_to], references: [id])
+  behaviour_id Int?
+  behaviour    Behaviour? @relation(fields: [behaviour_id], references: [id])
+  comment      String
+
+  @@unique([liked_by, liked_to])
+}
+
+model Chats {
+  id          Int      @id @default(autoincrement())
+  sender_id   Int
+  receiver_id Int
+  message     String
+  sender      User     @relation("chats_sent", fields: [sender_id], references: [id])
+  receiver    User     @relation("chats_received", fields: [receiver_id], references: [id])
+  created_at  DateTime @default(now())
+}
+
+model Matches {
+  id               Int  @id @default(autoincrement())
+  first_person_id  Int
+  second_person_id Int
+  first_person     User @relation("match_initiated", fields: [first_person_id], references: [id])
+  second_person    User @relation("match_accepted", fields: [second_person_id], references: [id])
+}

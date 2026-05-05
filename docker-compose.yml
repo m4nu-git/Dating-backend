@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: hinge_db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: hinge
+      POSTGRES_PASSWORD: hinge_secret
+      POSTGRES_DB: hinge_db
+    volumes:
+      - hinge_pgdata:/var/lib/postgresql/data
+
+volumes:
+  hinge_pgdata:
